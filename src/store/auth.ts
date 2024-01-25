@@ -1,4 +1,4 @@
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth'
+import { ethers } from 'ethers';
 import { ref, set } from 'firebase/database'
 import { produce } from 'immer'
 import { auth, database } from 'lib/firebase'
@@ -131,27 +131,35 @@ export const useAuthStore = create<State>((setState, getState) => ({
       console.error('decrementBalanceError', error)
     }
   },
-  signIn: async () => {
+ signIn: async () => {
     try {
-      setState(state => ({ ...state, isAuthLoading: true }))
-      const provider = new GoogleAuthProvider()
-      const { user } = await signInWithPopup(auth, provider)
-      const { uid: id, displayName: name, photoURL: profilePic, email } = user
-      if (name && email) {
-        const newUser = { id, name, email, profilePic: profilePic || '' }
-        storeUser(newUser)
-        setState(
-          produce<State>(state => {
-            state.user = newUser
-            state.isAuth = true
-            state.isAuthLoading = false
-          })
-        )
-      }
-      setState(state => ({ ...state, isLoading: false }))
+      setState(state => ({ ...state, isAuthLoading: true }));
+
+      // Request Ethereum provider
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+      // Request user authentication
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const userAddress = accounts[0];
+
+      // Fetch user data or create a new user
+      const userData = await fetchUserData(userAddress);
+      
+      const { id, name, email, profilePic } = userData;
+
+      const newUser = { id, name, email, profilePic: profilePic || '' };
+      storeUser(newUser);
+
+      setState(
+        produce<State>(state => {
+          state.user = newUser;
+          state.isAuth = true;
+          state.isAuthLoading = false;
+        })
+      );
     } catch (error) {
-      toast.error('Ocorreu um erro ao fazer login')
-      console.error('signInError', error)
+      toast.error('Ocorreu um erro ao fazer login');
+      console.error('signInError', error);
     }
   },
   signOut: async () => {
