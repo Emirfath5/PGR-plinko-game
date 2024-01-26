@@ -1,13 +1,13 @@
-import classNames from 'classnames'
-import { User } from 'pages/ScoreBoard/@types/player'
-import { Crown, FinnTheHuman } from 'phosphor-react'
-import { useAuthStore } from 'store/auth'
-import { formatPoints } from 'utils/currencyFormat'
+import classNames from 'classnames';
+import { User } from 'pages/ScoreBoard/@types/player';
+import { Crown, FinnTheHuman } from 'phosphor-react';
+import { useAuthStore } from 'store/auth';
+import { formatPoints } from 'utils/currencyFormat';
 
 interface ScoreBoardPlayerItemProps {
-  player: User
-  position: number
-  onClick: () => void
+  player: User;
+  position: number;
+  onClick: () => void;
 }
 
 export function ScoreBoardPlayerItem({
@@ -15,15 +15,16 @@ export function ScoreBoardPlayerItem({
   position,
   onClick
 }: ScoreBoardPlayerItemProps) {
-  const user = useAuthStore(state => state.user)
+  const currentUser = useAuthStore(state => state.user);
+
   return (
     <button
       onClick={onClick}
       className={classNames(
         'group relative flex items-center justify-between gap-4 rounded-md p-1 px-2 hover:bg-secondary/80',
         {
-          'bg-secondary/60': player.uid === user.id,
-          'bg-secondary/20': player.uid !== user.id
+          'bg-secondary/60': player.uid === currentUser.id,
+          'bg-secondary/20': player.uid !== currentUser.id
         }
       )}
       key={player.uid + player.name}
@@ -46,20 +47,20 @@ export function ScoreBoardPlayerItem({
         className={classNames(
           'flex max-w-full flex-1 items-center justify-between gap-4',
           {
-            'text-purple': player.uid === user.id,
-            'text-text': player.uid !== user.id
+            'text-purple': player.uid === currentUser.id,
+            'text-text': player.uid !== currentUser.id
           }
         )}
       >
-        <p className=" max-w-[15ch] overflow-hidden truncate text-left group-hover:text-transparent lg:w-[15ch] lg:max-w-[15ch]">
-          {player.uid === user.id ? (
-            <strong>Você</strong>
+        <p className="max-w-[15ch] overflow-hidden truncate text-left group-hover:text-transparent lg:w-[15ch] lg:max-w-[15ch]">
+          {player.uid === currentUser.id ? (
+            <strong>You</strong>
           ) : (
-            player.name || 'Jogador Anônimo'
+            player.name || 'Anonymous Player'
           )}
         </p>
         <p className="absolute left-1/3 hidden animate-pulse text-text group-hover:block">
-          Clique para ir ao perfil
+          Click to go to the profile
         </p>
         <p
           className="text-right font-bold text-sm transition-colors group-hover:text-transparent lg:w-[50ch]  lg:max-w-[50ch] lg:text-lg"
@@ -79,5 +80,6 @@ export function ScoreBoardPlayerItem({
         <FinnTheHuman size="30" weight="fill" />
       )}
     </button>
-  )
+  );
 }
+
