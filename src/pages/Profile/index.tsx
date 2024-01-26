@@ -1,18 +1,34 @@
-import classNames from 'classnames'
-import { Crown, FinnTheHuman } from 'phosphor-react'
-import { useAuthStore } from 'store/auth'
-import { formatPoints } from 'utils/currencyFormat'
+import classNames from 'classnames';
+import { Crown, FinnTheHuman } from 'phosphor-react';
+import { useEffect, useState } from 'react';
+import { useAuthStore } from 'store/auth';
+import { formatPoints } from 'utils/currencyFormat';
 
 interface User {
-  name: string
-  profilePic: string
-  uid: string
-  currentBalance: number
-  position: number
+  name: string;
+  profilePic: string;
+  uid: string;
+  currentBalance: number;
+  position: number;
+  nftCount: number; // New property for holding the number of NFTs
 }
 
 export function Profile(user: User) {
-  const authUser = useAuthStore(state => state.user)
+  const authUser = useAuthStore(state => state.user);
+  const [nftCount, setNftCount] = useState<number | null>(null);
+
+  // Example function to fetch the number of NFTs
+  const fetchNftCount = async () => {
+    // Add logic to fetch the number of NFTs for the user
+    // For example, you may fetch it from an API or another source
+    // Update the setNftCount with the fetched count
+    // setNftCount(fetchedNftCount);
+  };
+
+  useEffect(() => {
+    fetchNftCount(); // Fetch the number of NFTs when the component mounts
+  }, []);
+
   return (
     <div className="flex flex-col items-center justify-center gap-2 rounded-md bg-primary p-2 px-6 text-text">
       <div className="relative mx-auto w-32 rounded-full">
@@ -46,11 +62,17 @@ export function Profile(user: User) {
           'text-purple': user.uid === authUser.id
         })}
       >
-        {user.name || 'Jogador Anônimo'} {user.uid === authUser.id && '(você)'}
+        {user.name || 'Anonymous Player'} {user.uid === authUser.id && '(you)'}
       </span>
       <span className="text-center text-xl font-bold">
         {formatPoints(user.currentBalance)} PPs
       </span>
+      {nftCount !== null && (
+        <span className="text-center text-lg">
+          Number of NFTs: {nftCount}
+        </span>
+      )}
     </div>
-  )
+  );
 }
+
