@@ -11,6 +11,46 @@ export function Gifts() {
     await redeemGift()
     navigate('/')
   }
+
+  async function handleRedeemGift() {
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const userAddress = accounts[0];
+
+      // Create an instance of the ERC-20 contract
+      const erc20Contract = new window.ethereum.Contract(erc20ABI, erc20Address);
+
+      // Check the user's token balance
+      const userTokenBalance = await erc20Contract.methods.balanceOf(userAddress).call();
+
+      // Define the redemption amount (adjust this based on your logic)
+      const redemptionAmount = 100; // Replace with your desired redemption amount
+
+      // Check if the user has enough tokens for redemption
+      if (userTokenBalance >= redemptionAmount) {
+        // Call the ERC-20 transfer function to redeem tokens
+        await erc20Contract.methods
+          .YOUR_ERC20_TRANSFER_FUNCTION(YOUR_REDEMPTION_ADDRESS, redemptionAmount)
+          .send({
+            from: userAddress,
+          });
+
+        // Update your application's internal record of the user's balance
+        updateInternalBalance(userAddress);
+
+        // Continue with the existing redemption logic
+        await redeemGift();
+        navigate('/');
+      } else {
+        // Handle insufficient balance (show a message, etc.)
+        console.log('Insufficient balance for redemption');
+      }
+    } catch (error) {
+      // Handle errors (show an error message, etc.)
+      console.error('Error during redemption:', error);
+    }
+  }
+
   return (
    <div className="flex h-full flex-col items-center justify-center gap-4 text-text">
   <Gift className="text-purple" weight="fill" size="80" />
