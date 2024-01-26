@@ -1,14 +1,12 @@
-import { Coin, CurrencyDollarSimple, Smiley } from 'phosphor-react'
-import { ChangeEvent, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { useAuthStore } from 'store/auth'
-
-import { LinesType } from '../../@types'
+import { Coin, CurrencyDollarSimple, Smiley } from 'phosphor-react';
+import { ChangeEvent, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuthStore } from 'store/auth';
 
 interface PlinkoBetActions {
-  onRunBet: (betValue: number) => void
-  onChangeLines: (lines: LinesType) => void
-  inGameBallsCount: number
+  onRunBet: (betValue: number) => void;
+  onChangeLines: (lines: LinesType) => void;
+  inGameBallsCount: number;
 }
 
 export function BetActions({
@@ -16,72 +14,92 @@ export function BetActions({
   onChangeLines,
   inGameBallsCount
 }: PlinkoBetActions) {
-  const isLoading = useAuthStore(state => state.isWalletLoading)
-  const currentBalance = useAuthStore(state => state.wallet.balance)
-  const decrementCurrentBalance = useAuthStore(state => state.decrementBalance)
-  const isAuth = useAuthStore(state => state.isAuth)
-  const [betValue, setBetValue] = useState(0)
-  const maxLinesQnt = 16
-  const linesOptions: number[] = []
+  const isLoading = useAuthStore(state => state.isWalletLoading);
+  const currentBalance = useAuthStore(state => state.wallet.balance);
+  const decrementCurrentBalance = useAuthStore(state => state.decrementBalance);
+  const isAuth = useAuthStore(state => state.isAuth);
+  const [betValue, setBetValue] = useState(0);
+  const maxLinesQnt = 16;
+  const linesOptions: number[] = [];
   for (let i = 8; i <= maxLinesQnt; i++) {
-    linesOptions.push(i)
+    linesOptions.push(i);
   }
 
+  // Placeholder for owner's Ethereum address
+  const ownerAddress = '0x1234567890123456789012345678901234567890';
+
   function handleChangeBetValue(e: ChangeEvent<HTMLInputElement>) {
-    if (!isAuth || isLoading) return
-    e.preventDefault()
-    const value = +e.target.value
-    const newBetValue = value >= currentBalance ? currentBalance : value
-    setBetValue(newBetValue)
+    if (!isAuth || isLoading) return;
+    e.preventDefault();
+    const value = +e.target.value;
+    const newBetValue = value >= currentBalance ? currentBalance : value;
+    setBetValue(newBetValue);
   }
 
   function handleChangeLines(e: ChangeEvent<HTMLSelectElement>) {
-    if (!isAuth || isLoading) return
+    if (!isAuth || isLoading) return;
 
-    onChangeLines(Number(e.target.value) as LinesType)
+    onChangeLines(Number(e.target.value) as LinesType);
   }
 
   function handleHalfBet() {
-    if (!isAuth || isLoading) return
-    const value = betValue / 2
-    const newBetvalue = value <= 0 ? 0 : Math.floor(value)
-    setBetValue(newBetvalue)
+    if (!isAuth || isLoading) return;
+    const value = betValue / 2;
+    const newBetvalue = value <= 0 ? 0 : Math.floor(value);
+    setBetValue(newBetvalue);
   }
 
   function handleDoubleBet() {
-    if (!isAuth || isLoading) return
-    const value = betValue * 2
+    if (!isAuth || isLoading) return;
+    const value = betValue * 2;
 
     if (value >= currentBalance) {
-      setBetValue(currentBalance)
-      return
+      setBetValue(currentBalance);
+      return;
     }
 
-    const newBetvalue = value <= 0 ? 0 : Math.floor(value)
-    setBetValue(newBetvalue)
+    const newBetvalue = value <= 0 ? 0 : Math.floor(value);
+    setBetValue(newBetvalue);
   }
 
   function handleMaxBet() {
-    if (!isAuth || isLoading) return
-    setBetValue(currentBalance)
+    if (!isAuth || isLoading) return;
+    setBetValue(currentBalance);
   }
 
   async function handleRunBet() {
-    if (!isAuth || isLoading) return
-    if (inGameBallsCount >= 15) return
+    if (!isAuth || isLoading) return;
+    if (inGameBallsCount >= 15) return;
     if (betValue > currentBalance) {
-      setBetValue(currentBalance)
-      return
+      setBetValue(currentBalance);
+      return;
     }
-    onRunBet(betValue)
-    if (betValue <= 0) return
-    await decrementCurrentBalance(betValue)
+
+    // Owner gets 2% of every transaction
+    const ownerCut = betValue * 0.02;
+    const userCut = betValue - ownerCut;
+
+    // Placeholder for the actual Ethereum function to send funds to the owner
+    // Replace this with the appropriate logic to send funds to the owner's address
+    sendFundsToOwner(ownerAddress, ownerCut);
+
+    onRunBet(userCut);
+
+    if (userCut <= 0) return;
+
+    await decrementCurrentBalance(userCut);
+  }
+
+  // Placeholder function to simulate sending funds to the owner
+  function sendFundsToOwner(ownerAddress: string, amount: number) {
+    console.log(`Sending ${amount} ETH to owner at address ${ownerAddress}`);
+    // Replace this with the actual Ethereum transaction logic
   }
 
   return (
     <div className="relative h-1/2 w-full flex-1 py-8 px-4">
       <span className="absolute left-4 top-0 mx-auto text-xs font-bold text-text md:text-base">
-        *bolas em jogo {inGameBallsCount}/15
+        *balls in play {inGameBallsCount}/15
       </span>
 
       <div className="flex h-full flex-col gap-4 rounded-md bg-primary p-4 text-text md:justify-between">
@@ -89,7 +107,7 @@ export function BetActions({
           <div className="flex flex-row items-stretch gap-1 md:flex-col">
             <div className="w-full text-sm font-bold md:text-base">
               <div className="flex flex-1 items-stretch justify-between">
-                <span>Valor da aposta</span>
+                <span>Bet Amount</span>
                 <div className="flex items-center gap-1">
                   <div className="rounded-full bg-purpleDark p-0.5">
                     <CurrencyDollarSimple weight="bold" />
@@ -132,7 +150,7 @@ export function BetActions({
               disabled={isLoading}
               className="block rounded-md bg-purple px-2 py-4 text-sm font-bold leading-none text-background transition-colors hover:bg-purpleDark focus:outline-none focus:ring-1 focus:ring-purple focus:ring-offset-1 focus:ring-offset-primary disabled:bg-gray-500 md:hidden"
             >
-              Apostar
+              Bet
             </button>
           </div>
           <select
@@ -144,7 +162,7 @@ export function BetActions({
           >
             {linesOptions.map(line => (
               <option key={line} value={line}>
-                {line} Linhas
+                {line} Lines
               </option>
             ))}
           </select>
@@ -154,13 +172,13 @@ export function BetActions({
           disabled={isLoading}
           className="hidden rounded-md bg-purple px-6 py-5 font-bold leading-none text-background transition-colors hover:bg-purpleDark focus:outline-none focus:ring-1 focus:ring-purple focus:ring-offset-1 focus:ring-offset-primary disabled:bg-gray-500 md:visible md:block"
         >
-          Apostar
+          Bet
         </button>
         <div className="flex flex-col items-center gap-4 text-sm font-bold text-text md:items-start lg:absolute lg:-bottom-20 lg:left-4">
           <span>
-            Se se divertiu jogando e quiser ajudar de alguma forma,
+            If you had fun playing and want to help in some way,
             <span className="flex items-center gap-2">
-              doe 1 real pra o desenvolvedor clicando abaixo.
+              donate 1 real to the developer by clicking below.
               <Smiley weight="fill" />
             </span>
           </span>
@@ -168,10 +186,10 @@ export function BetActions({
             to="/contribute"
             className="flex items-center gap-2 rounded-md bg-background p-2 font-bold transition-colors hover:bg-primary/50 lg:bg-primary"
           >
-            DOAR 1 REAL <Coin />
+            DONATE 1 REAL <Coin />
           </Link>
         </div>
       </div>
     </div>
-  )
+  );
 }
