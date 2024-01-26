@@ -1,42 +1,53 @@
-import { GoogleLogo } from 'phosphor-react'
-import { useEffect } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
-import { useAuthStore } from 'store/auth'
+import { MetaMaskLogo } from 'phosphor-react';
+import { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuthStore } from 'store/auth';
 
 type LocationState = {
-  from?: string
-}
+  from?: string;
+};
 
 export function LoginPage() {
-  const location = useLocation()
-  const state = location.state as LocationState
-  const navigate = useNavigate()
-  const signIn = useAuthStore(state => state.signIn)
-  const isAuth = useAuthStore(state => state.isAuth)
+  const location = useLocation();
+  const state = location.state as LocationState;
+  const navigate = useNavigate();
+  const signIn = useAuthStore(state => state.signIn);
+  const isAuth = useAuthStore(state => state.isAuth);
 
   useEffect(() => {
     if (state && state.from && isAuth) {
-      navigate(state.from)
+      navigate(state.from);
     }
-  }, [isAuth])
+  }, [isAuth]);
 
   async function handleSignIn() {
-    await signIn()
-    navigate('/')
+    // Implement MetaMask authentication logic
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      // Use accounts[0] as the user's MetaMask address
+      console.log('MetaMask address:', accounts[0]);
+
+      // Continue with your authentication logic
+      await signIn();
+      navigate('/');
+    } catch (error) {
+      // Handle MetaMask authentication error
+      console.error('MetaMask authentication error:', error);
+    }
   }
 
   return (
     <div className="flex h-full flex-col items-center justify-center gap-4 p-2">
       <span className="text-center text-2xl font-bold text-text">
-        Faça login para mostrar seu score para outros jogadores.
+        Log in to showcase your score to other players.
       </span>
       <button
         onClick={handleSignIn}
-        className="flex items-center gap-2 rounded-md bg-red-500 px-6 py-4 font-bold text-text shadow-sm transition-colors hover:bg-red-700"
+        className="flex items-center gap-2 rounded-md bg-blue-500 px-6 py-4 font-bold text-text shadow-sm transition-colors hover:bg-blue-700"
       >
-        <GoogleLogo size="20" weight="fill" />
-        Login com o Google
+        <MetaMaskLogo size="20" weight="fill" />
+        Login with MetaMask
       </button>
     </div>
-  )
+  );
 }
