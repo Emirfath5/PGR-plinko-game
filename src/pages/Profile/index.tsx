@@ -3,6 +3,8 @@ import { Crown, FinnTheHuman } from 'phosphor-react';
 import { useEffect, useState } from 'react';
 import { useAuthStore } from 'store/auth';
 import { formatPoints } from 'utils/currencyFormat';
+import { Contract, ethers } from 'ethers';
+
 
 interface User {
   name: string;
@@ -17,13 +19,29 @@ export function Profile(user: User) {
   const authUser = useAuthStore(state => state.user);
   const [nftCount, setNftCount] = useState<number | null>(null);
 
-  // Example function to fetch the number of NFTs
-  const fetchNftCount = async () => {
-    // Add logic to fetch the number of NFTs for the user
-    // For example, you may fetch it from an API or another source
-    // Update the setNftCount with the fetched count
-    // setNftCount(fetchedNftCount);
-  };
+ const contractAddress = 'YOUR_CUSTOM_CONTRACT_ADDRESS'; // Replace with your actual contract address
+const abi = [
+  // Replace with your contract ABI (Application Binary Interface)
+  // ABI is a JSON representation of the smart contract interface
+];
+
+const fetchNftCount = async () => {
+  try {
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    await provider.send('eth_requestAccounts', []);
+    
+    const signer = provider.getSigner();
+    const contract = new Contract(contractAddress, abi, signer);
+
+    // Assume your contract has a function named 'getNftCount'
+    const fetchedNftCount = await contract.getNftCount();
+
+    setNftCount(fetchedNftCount.toNumber());
+  } catch (error) {
+    console.error('Error fetching NFT count:', error);
+    // Handle error (show an error message, retry, etc.)
+  }
+};
 
   useEffect(() => {
     fetchNftCount(); // Fetch the number of NFTs when the component mounts
