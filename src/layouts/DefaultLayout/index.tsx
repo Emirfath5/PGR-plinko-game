@@ -55,13 +55,13 @@ export function DefaultLayout() {
     <div className="flex relative min-h-screen w-full flex-col justify-between bg-background">
       <div className="absolute right-6 bottom-6 z-[9999]">
         <a
-          href="https://www.buymeacoffee.com/kayooliveira"
+          href="https://www.polygonreaper.com/"
           target="_blank"
           rel="noreferrer"
         >
           <img
-            src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
-            alt="Buy Me A Coffee"
+            src="https://im.ezgif.com/tmp/ezgif-1-5ceaf592ce.png"
+            alt="Become A Reaper"
             style={{ height: '36.3px', width: '131.285px' }}
           />
         </a>
