@@ -9,6 +9,8 @@ interface PlinkoBetActions {
   inGameBallsCount: number;
 }
 
+type TokenType = 'polygon' | 'erc20'; // New type for token selection
+
 export function BetActions({
   onRunBet,
   onChangeLines,
@@ -19,12 +21,7 @@ export function BetActions({
   const decrementCurrentBalance = useAuthStore(state => state.decrementBalance);
   const isAuth = useAuthStore(state => state.isAuth);
   const [betValue, setBetValue] = useState(0);
-  const maxLinesQnt = 16;
-  const linesOptions: number[] = [];
-  for (let i = 8; i <= maxLinesQnt; i++) {
-    linesOptions.push(i);
-  }
-
+  const [selectedToken, setSelectedToken] = useState<TokenType>('polygon'); // Default to Polygon
   // Placeholder for owner's Ethereum address
   const ownerAddress = '0x1234567890123456789012345678901234567890';
 
