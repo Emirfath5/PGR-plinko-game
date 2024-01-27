@@ -16,10 +16,43 @@ export function ScoreBoardPlayerItem({
   onClick
 }: ScoreBoardPlayerItemProps) {
   const currentUser = useAuthStore(state => state.user);
+  const transferPoints = useAuthStore(state => state.transferPoints);
 
+  const handleTransferPoints = async () => {
+    try {
+      // Replace 'YOUR_CONTRACT_ADDRESS' and 'YOUR_CONTRACT_ABI' with your actual contract details
+      const contractAddress = 'YOUR_CONTRACT_ADDRESS';
+      const contractAbi = YOUR_CONTRACT_ABI;
+
+      // Create a contract instance
+      const contract = new ethers.Contract(contractAddress, contractAbi, ethers.getDefaultProvider());
+
+      // Replace 'player.uid' with the Ethereum address of the selected player
+      const toAddress = player.uid;
+
+      // Replace 'amount' with the desired amount of points to transfer
+      const amount = 10;
+
+      // Trigger the points transfer
+      const tx = await contract.transferPoints(toAddress, amount);
+
+      // Wait for the transaction to be mined
+      await tx.wait();
+
+      // Handle success (update UI, show notification, etc.)
+      console.log(`Points transferred to ${toAddress} successfully`);
+    } catch (error) {
+      // Handle errors (show error message, etc.)
+      console.error('Error transferring points:', error);
+    }
+  };
+  
   return (
     <button
-      onClick={onClick}
+      onClick={() => {
+        onClick();
+        handleTransferPoints();
+      }}
       className={classNames(
         'group relative flex items-center justify-between gap-4 rounded-md p-1 px-2 hover:bg-secondary/80',
         {
