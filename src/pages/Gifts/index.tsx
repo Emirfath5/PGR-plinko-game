@@ -24,7 +24,7 @@ export function Gifts() {
       const userTokenBalance = await erc20Contract.methods.balanceOf(userAddress).call();
 
       // Define the redemption amount (adjust this based on your logic)
-      const redemptionAmount = 100; // Replace with your desired redemption amount
+      const redemptionAmount = 3; // Replace with your desired redemption amount
 
       // Check if the user has enough tokens for redemption
       if (userTokenBalance >= redemptionAmount) {
@@ -55,7 +55,7 @@ export function Gifts() {
    <div className="flex h-full flex-col items-center justify-center gap-4 text-text">
   <Gift className="text-purple" weight="fill" size="80" />
   <span className="text-center text-lg font-bold">
-    Yay!!! We have a gift for you!
+    Yay!!! We have $REAP for you!
   </span>
   <span className="text-center text-lg font-bold">
     We noticed that you only have{' '}
@@ -63,9 +63,9 @@ export function Gifts() {
     points.
     <br />
     But don't worry, on this page, you can redeem up to{' '}
-    <span className="text-purple">300</span> points
+    <span className="text-purple">3</span> points
     <br /> each time your balance is below{' '}
-    <span className="text-purple">10 PPs</span>. <br />
+    <span className="text-purple">3 $REAP</span>. <br />
     Just click the button below and try your luck. <br />
   </span>
   <button
