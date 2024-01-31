@@ -5,17 +5,20 @@ import Web3 from 'web3';
 const contractABI = [...];
 const contractAddress = '0x1234567890123456789012345678901234567890';
 
-// Function to initialize Web3
 export async function initWeb3() {
-  if (window.ethereum) {
-    await window.ethereum.enable();
-    return new Web3(window.ethereum);
-  } else {
-    throw new Error('MetaMask or other Ethereum provider not detected.');
+  try {
+    if (window.ethereum) {
+      await window.ethereum.enable();
+      return new Web3(window.ethereum);
+    } else {
+      throw new Error('MetaMask or other Ethereum provider not detected.');
+    }
+  } catch (error) {
+    console.error('Error initializing Web3:', error.message);
+    throw error;
   }
 }
 
-// Function to send funds to the opponent
 export async function sendFundsToOpponent(opponentAddress, userCut) {
   try {
     const web3 = await initWeb3();
@@ -35,6 +38,7 @@ export async function sendFundsToOpponent(opponentAddress, userCut) {
     console.log(`Sent ${userCut} ETH to opponent at address ${checksumOpponentAddress}`);
   } catch (error) {
     console.error('Error sending funds to opponent:', error.message);
+    throw error;
   }
 }
 
@@ -65,38 +69,44 @@ export function BetActions({
 
   const [opponentAddress, setOpponentAddress] = useState<string | null>(null);
 
-  // New function to find an opponent
   const findOpponent = async () => {
     try {
-      // Call your smart contract function to find an opponent
-      const opponent = await yourContract.findOpponent();
+      const web3 = await initWeb3();
+      const contract = new web3.eth.Contract(contractABI, contractAddress);
+
+      const opponent = await contract.methods.findOpponent().call();
       setOpponentAddress(opponent);
     } catch (error) {
-      console.error("Error finding opponent:", error);
+      console.error("Error finding opponent:", error.message);
+    }
+  };
+  
+  const handleRunBet = async () => {
+    try {
+      if (!isAuth || isLoading || !opponentAddress) return;
+      if (inGameBallsCount >= 15 || betValue <= 0) return;
+
+      const web3 = await initWeb3();
+      const accounts = await web3.eth.getAccounts();
+      const userAddress = accounts[0];
+
+      const contract = new web3.eth.Contract(contractABI, contractAddress);
+
+      const ownerCut = betValue * 0.02;
+      const userCut = betValue - ownerCut;
+
+      await sendFundsToOpponent(opponentAddress, userCut);
+
+      onRunBet(userCut);
+
+      if (userCut > 0) {
+        await decrementCurrentBalance(userCut);
+      }
+    } catch (error) {
+      console.error('Error running bet:', error.message);
     }
   };
 
-  async function handleRunBet() {
-    if (!isAuth || isLoading || !opponentAddress) return;
-    if (inGameBallsCount >= 15) return;
-    if (betValue > currentBalance) {
-      setBetValue(currentBalance);
-      return;
-    }
-
-    // Owner gets 2% of every transaction
-    const ownerCut = betValue * 0.02;
-    const userCut = betValue - ownerCut;
-
-    // Send funds to the opponent
-    await sendFundsToOpponent(opponentAddress, userCut);
-
-    onRunBet(userCut);
-
-    if (userCut <= 0) return;
-
-    await decrementCurrentBalance(userCut);
-  }
 
   function handleChangeBetValue(e: ChangeEvent<HTMLInputElement>) {
     if (!isAuth || isLoading) return;
@@ -288,3 +298,5 @@ sendFundsToOwner(ownerAddress, ownerCut);
     </div>
   );
 }
+  export default BetActions;
+
