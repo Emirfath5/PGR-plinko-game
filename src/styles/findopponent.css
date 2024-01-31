@@ -1,0 +1,34 @@
+/* FindOpponentComponent.css */
+.find-opponent-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.find-opponent-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: url('https://pbs.twimg.com/profile_images/1625001905335271427/ZyjjfJKm_400x400.jpg'),auto; /* Change to "pointer" from "Ghost Character" */
+  transition: background-color 0.3s;
+}
+
+.find-opponent-button:hover {
+  padding: 12px 22px; /* Adjust padding for a slight size increase */
+  background-color: #45a049; /* Darken the background color */
+  color: #fff; /* Change text color to white */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add a subtle box shadow */
+  transform: scale(1.05); /* Slightly scale up the button */
+  transition: background-color 0.3s, transform 0.3s; /* Add smooth transitions */
+}
+
+.find-opponent-button:disabled {
+  background-color: #ddd;
+  color: #666;
+  cursor: not-allowed;
+}
