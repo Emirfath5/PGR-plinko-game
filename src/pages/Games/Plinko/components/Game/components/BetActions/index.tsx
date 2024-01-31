@@ -1,3 +1,44 @@
+// Web3Util.js
+import Web3 from 'web3';
+
+// Replace with your actual contract ABI and address
+const contractABI = [...];
+const contractAddress = '0x1234567890123456789012345678901234567890';
+
+// Function to initialize Web3
+export async function initWeb3() {
+  if (window.ethereum) {
+    await window.ethereum.enable();
+    return new Web3(window.ethereum);
+  } else {
+    throw new Error('MetaMask or other Ethereum provider not detected.');
+  }
+}
+
+// Function to send funds to the opponent
+export async function sendFundsToOpponent(opponentAddress, userCut) {
+  try {
+    const web3 = await initWeb3();
+    const accounts = await web3.eth.getAccounts();
+    const userAddress = accounts[0];
+
+    const contract = new web3.eth.Contract(contractABI, contractAddress);
+
+    const checksumOpponentAddress = web3.utils.toChecksumAddress(opponentAddress);
+    const userCutInWei = web3.utils.toWei(userCut.toString(), 'ether');
+
+    await contract.methods.sendFundsToOpponent(checksumOpponentAddress, userCutInWei).send({
+      from: userAddress,
+      value: userCutInWei,
+    });
+
+    console.log(`Sent ${userCut} ETH to opponent at address ${checksumOpponentAddress}`);
+  } catch (error) {
+    console.error('Error sending funds to opponent:', error.message);
+  }
+}
+
+// YourComponent.jsx
 import { Coin, CurrencyDollarSimple, Smiley } from 'phosphor-react';
 import { ChangeEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -21,9 +62,41 @@ export function BetActions({
   const decrementCurrentBalance = useAuthStore(state => state.decrementBalance);
   const isAuth = useAuthStore(state => state.isAuth);
   const [betValue, setBetValue] = useState(0);
-  const [selectedToken, setSelectedToken] = useState<TokenType>('polygon'); // Default to Polygon
-  // Placeholder for owner's Ethereum address
-  const ownerAddress = '0x1234567890123456789012345678901234567890';
+
+  const [opponentAddress, setOpponentAddress] = useState<string | null>(null);
+
+  // New function to find an opponent
+  const findOpponent = async () => {
+    try {
+      // Call your smart contract function to find an opponent
+      const opponent = await yourContract.findOpponent();
+      setOpponentAddress(opponent);
+    } catch (error) {
+      console.error("Error finding opponent:", error);
+    }
+  };
+
+  async function handleRunBet() {
+    if (!isAuth || isLoading || !opponentAddress) return;
+    if (inGameBallsCount >= 15) return;
+    if (betValue > currentBalance) {
+      setBetValue(currentBalance);
+      return;
+    }
+
+    // Owner gets 2% of every transaction
+    const ownerCut = betValue * 0.02;
+    const userCut = betValue - ownerCut;
+
+    // Send funds to the opponent
+    await sendFundsToOpponent(opponentAddress, userCut);
+
+    onRunBet(userCut);
+
+    if (userCut <= 0) return;
+
+    await decrementCurrentBalance(userCut);
+  }
 
   function handleChangeBetValue(e: ChangeEvent<HTMLInputElement>) {
     if (!isAuth || isLoading) return;
@@ -72,26 +145,51 @@ export function BetActions({
       return;
     }
 
-    // Owner gets 2% of every transaction
-    const ownerCut = betValue * 0.02;
-    const userCut = betValue - ownerCut;
 
-    // Placeholder for the actual Ethereum function to send funds to the owner
-    // Replace this with the appropriate logic to send funds to the owner's address
-    sendFundsToOwner(ownerAddress, ownerCut);
+// Function to send funds to the owner
+async function sendFundsToOwner(ownerAddress, ownerCut) {
+  try {
+    // Connect to the user's Ethereum provider (e.g., MetaMask)
+    if (window.ethereum) {
+      await window.ethereum.enable();
+    } else {
+      console.error('MetaMask or other Ethereum provider not detected.');
+      return;
+    }
 
-    onRunBet(userCut);
+    // Create a Web3 instance
+    const web3 = new Web3(window.ethereum);
 
-    if (userCut <= 0) return;
+    // Set the default account to the user's account
+    const accounts = await web3.eth.getAccounts();
+    const userAddress = accounts[0];
 
-    await decrementCurrentBalance(userCut);
+    // Create a contract instance
+    const contract = new web3.eth.Contract(contractABI, contractAddress);
+
+    // Convert the owner's address to a checksum address
+    const checksumOwnerAddress = web3.utils.toChecksumAddress(ownerAddress);
+
+    // Convert the owner's cut to Wei (1 Ether = 1e18 Wei)
+    const ownerCutInWei = web3.utils.toWei(ownerCut.toString(), 'ether');
+
+    // Send funds to the owner using the contract's method
+    await contract.methods.sendFundsToOwner(checksumOwnerAddress, ownerCutInWei).send({
+      from: userAddress,
+      value: ownerCutInWei,
+    });
+
+    console.log(`Sent ${ownerCut} ETH to owner at address ${checksumOwnerAddress}`);
+  } catch (error) {
+    console.error('Error sending funds to owner:', error);
   }
+}
 
-  // Placeholder function to simulate sending funds to the owner
-  function sendFundsToOwner(ownerAddress: string, amount: number) {
-    console.log(`Sending ${amount} ETH to owner at address ${ownerAddress}`);
-    // Replace this with the actual Ethereum transaction logic
-  }
+// Call the function with the owner's address and cut
+const ownerAddress = '0x9876543210987654321098765432109876543210'; // Replace with the actual owner's address
+const ownerCut = 0.1; // Replace with the actual owner's cut
+sendFundsToOwner(ownerAddress, ownerCut);
+
 
   return (
     <div className="relative h-1/2 w-full flex-1 py-8 px-4">
