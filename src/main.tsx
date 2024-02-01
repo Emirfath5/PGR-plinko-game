@@ -1,21 +1,24 @@
-import './styles/global.css'
-import React, { useEffect, useState } from 'react'
-import { createRoot } from 'react-dom/client'
-import { Toaster } from 'react-hot-toast'
-import { Routes } from 'routes'
+import './styles/global.css';
+import React, { useEffect, useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import { Toaster } from 'react-hot-toast';
+import { Routes } from 'routes';
 import { useAuthStore } from 'store/auth';
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-const container = document.getElementById('root')!
+const container = document.getElementById('root')!;
 
-const root = createRoot(container)
+const root = createRoot(container);
 
 const App = () => {
   const [nftCount, setNftCount] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
   const authUser = useAuthStore(state => state.user);
 
   const fetchNftCount = async () => {
     try {
+      setLoading(true);
+
       if (window.ethereum) {
         // Connect to MetaMask
         await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -24,9 +27,9 @@ const App = () => {
         const contractAddress = '0xYourCustomContractAddress';
 
         // Use web3 or ethers to interact with your NFT contract
-        // For simplicity, let's assume a hypothetical function `getNftCount` on your contract
-        // Replace this with your actual function and method to fetch NFT count
         const contract = new window.ethereum.Contract(/* your ABI */, contractAddress);
+
+        // Call the getNftCount function on your contract
         const fetchedNftCount = await contract.methods.getNftCount(authUser.id).call();
 
         setNftCount(Number(fetchedNftCount));
@@ -35,6 +38,8 @@ const App = () => {
       }
     } catch (error) {
       console.error('Error fetching NFT count:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -47,10 +52,12 @@ const App = () => {
       <Routes />
       <Toaster />
       {/* Display NFT count or loading indicator */}
-      {nftCount !== null ? (
+      {loading ? (
+        <div>Loading NFT count...</div>
+      ) : nftCount !== null ? (
         <div>NFT Count: {nftCount}</div>
       ) : (
-        <div>Loading NFT count...</div>
+        <div>Error fetching NFT count. Please try again.</div>
       )}
     </>
   );
