@@ -5,6 +5,7 @@ const updateGamesRunning = async (newGamesRunningValue) => {
   // Your logic to update gamesRunning in the Solidity contract
   // This function should interact with the Ethereum blockchain using web3 or ethers
   console.log('Updating games running in Solidity contract:', newGamesRunningValue);
+  // Include your actual interaction with the Solidity contract here
 };
 
 // Define the Zustand store
@@ -40,3 +41,4 @@ const useGameStore = create((set, get) => ({
 }));
 
 export default useGameStore;
+
